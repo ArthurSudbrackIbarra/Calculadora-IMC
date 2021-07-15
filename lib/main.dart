@@ -16,8 +16,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
   TextEditingController weightController = TextEditingController();
   TextEditingController heightController = TextEditingController();
+
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   String _infoText = "Informe os seus dados.";
 
   void _resetFields(){
@@ -39,23 +43,26 @@ class _HomeState extends State<Home> {
     String result = "";
     if(imc < 18.5){
       result = "Seu IMC é de ${imc.toStringAsPrecision(5)} (Abaixo do Peso).";
-    }
-    else if(imc <= 24.9){
+    } else if(imc <= 24.9){
       result = "Seu IMC é de ${imc.toStringAsPrecision(5)} (Peso Normal).";
-    }
-    else if(imc <= 29.9){
+    } else if(imc <= 29.9){
       result = "Seu IMC é de ${imc.toStringAsPrecision(5)} (Sobrepeso).";
-    }
-    else if(imc <= 34.9){
+    } else if(imc <= 34.9){
       result = "Seu IMC é de ${imc.toStringAsPrecision(5)} (Obesidade Grau I).";
-    }
-    else if(imc <= 39.9){
+    } else if(imc <= 39.9){
       result = "Seu IMC é de ${imc.toStringAsPrecision(5)} (Obesidade Grau II).";
-    }
-    else{
+    } else{
       result = "Seu IMC é de ${imc.toStringAsPrecision(5)} (Obesidade Grau III ou Mórbida).";
     }
     _updateInfoText(result);
+  }
+
+  bool _isNumber(String value){
+    final number = num.tryParse(value);
+    if(number == null){
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -74,55 +81,78 @@ class _HomeState extends State<Home> {
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Icon(Icons.person, size: 120, color: Colors.deepPurple.shade600,),
-            Padding(
-              padding: EdgeInsets.only(left: 40, right: 40),
-              child: TextField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: "Peso (kg)",
-                  labelStyle: TextStyle(color: Colors.deepPurple.shade600, fontSize: 15)
-                ),
-                style: TextStyle(color: Colors.blueGrey.shade600),
-                textAlign: TextAlign.center,
-                controller: weightController,
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(left: 40, right: 40),
-              child: TextField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: "Altura (cm)",
-                  labelStyle: TextStyle(color: Colors.deepPurple.shade600, fontSize: 15)
-                ),
-                style: TextStyle(color: Colors.blueGrey.shade600),
-                textAlign: TextAlign.center,
-                controller: heightController,
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(left: 40, right: 40, top: 30),
-              child: Container(
-                height: 40,
-                child: ElevatedButton(
-                  onPressed: _calculateIMC,
-                  child: Text("Calcular"),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.deepPurple.shade600
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(Icons.person, size: 120, color: Colors.deepPurple.shade600,),
+              Padding(
+                padding: EdgeInsets.only(left: 40, right: 40),
+                child: TextFormField(
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: "Peso (kg)",
+                    labelStyle: TextStyle(color: Colors.deepPurple.shade600, fontSize: 15)
                   ),
+                  style: TextStyle(color: Colors.blueGrey.shade600),
+                  textAlign: TextAlign.center,
+                  controller: weightController,
+                  validator: (value){
+                    if(value == null || value.isEmpty){
+                      return "O peso deve ser informado!";
+                    }
+                    if(!_isNumber(value)){
+                      return "O peso deve ser um número!";
+                    }
+                  },
                 ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 40, right: 40),
+                child: TextFormField(
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: "Altura (cm)",
+                    labelStyle: TextStyle(color: Colors.deepPurple.shade600, fontSize: 15)
+                  ),
+                  style: TextStyle(color: Colors.blueGrey.shade600),
+                  textAlign: TextAlign.center,
+                  controller: heightController,
+                  validator: (value){
+                    if(value == null || value.isEmpty){
+                      return "A altura deve ser informada!";
+                    }
+                    if(!_isNumber(value)){
+                      return "A altura deve ser um número!";
+                    }
+                  },
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 40, right: 40, top: 30),
+                child: Container(
+                  height: 40,
+                  child: ElevatedButton(
+                    onPressed: (){
+                      if(_formKey.currentState!.validate()){
+                        _calculateIMC();
+                      }
+                    },
+                    child: Text("Calcular"),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.deepPurple.shade600
+                    ),
+                  ),
+                )
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 40, right: 40, top: 30),
+                child: Text(_infoText, style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 15),)
               )
-            ),
-            Padding(
-              padding: EdgeInsets.only(left: 40, right: 40, top: 30),
-              child: Text(_infoText, style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 15),)
-            )
-          ],
-        ),
+            ],
+          ),
+        )
       )
     );
   }
